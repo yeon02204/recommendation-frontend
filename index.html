@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상품 추천 챗봇</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 전체 컨테이너 -->
+    <div class="app-container">
+        
+        <!-- 왼쪽: 채팅 영역 -->
+        <div class="chat-section">
+            
+            <!-- 헤더 -->
+            <div class="chat-header">
+                <button class="back-button">←</button>
+                <div class="header-title">쇼핑 도우미</div>
+                <button class="menu-button">⋮</button>
+            </div>
+
+            <!-- 채팅 메시지 영역 -->
+            <div class="messages-container" id="messagesContainer">
+                <!-- 초기 봇 메시지 -->
+                <div class="message bot-message">
+                    <img src="dog-normal.jpg" alt="봇" class="bot-avatar">
+                    <div class="message-bubble">
+                        안녕! 뭘 찾아드릴까요?
+                    </div>
+                </div>
+            </div>
+
+            <!-- 입력 영역 -->
+            <div class="input-area">
+                <input 
+                    type="text" 
+                    id="userInput" 
+                    placeholder="찾고 싶은 상품을 말해주세요..."
+                    autocomplete="off"
+                >
+                <button id="sendButton">전송</button>
+            </div>
+
+        </div>
+
+        <!-- 오른쪽: 카드 덱 영역 -->
+        <div class="cards-section">
+            
+            <div class="cards-header">
+                <h2>추천 상품 <span id="cardCount"></span></h2>
+            </div>
+
+            <!-- 카드 덱 컨테이너 -->
+            <div class="cards-deck-container" id="cardsDeckContainer">
+                <div class="no-cards-message">
+                    상품을 검색하면 여기에 추천 카드가 나타나요!
+                </div>
+            </div>
+
+            <!-- 카드 네비게이션 -->
+            <div class="cards-navigation" id="cardsNavigation" style="display: none;">
+                <button class="nav-button prev-button" id="prevButton">←</button>
+                <div class="card-indicators" id="cardIndicators"></div>
+                <button class="nav-button next-button" id="nextButton">→</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
