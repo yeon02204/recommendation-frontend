@@ -49,12 +49,12 @@ function handleSendMessage() {
 }
 
 // ===== API 호출 =====
-async function fetchRecommendations(userInput) {
+async function fetchRecommendations(userInputText) {
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userInput })
+            body: JSON.stringify({ userInput: userInputText })
         });
 
         const data = await response.json();
@@ -84,15 +84,17 @@ function handleServerResponse({ type, message, items }) {
             BOT_AVATAR_SUCCESS
         );
 
+        // 🔥 백엔드 Item 구조에 맞게 매핑
         const products = (items || []).map(item => ({
-            id: item.productId,
-            name: '추천 상품',
-            price: '',
-            image: 'https://via.placeholder.com/400x400',
-            mall: '',
-            link: 'https://search.shopping.naver.com',
-            reason: item.explanation
-        }));
+    id: item.productId,
+    name: item.title,
+    price: item.price ? `${item.price.toLocaleString()}원` : '',
+    image: item.imageUrl,
+    mall: item.mallName,
+    link: item.link,
+    reason: item.explanation || '추천 이유를 생성 중이에요.'
+}));
+
 
         showRecommendations(products);
     }
