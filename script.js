@@ -14,18 +14,13 @@ const cardCount = document.getElementById('cardCount');
 let currentProducts = [];
 let currentCardIndex = 0;
 
+// 🔥 HTML 초기 봇 메시지 제거 여부
+let initialBotMessageCleared = false;
+
 // ===== 봇 아바타 =====
 const BOT_AVATAR_NORMAL = './dog-normal.png';
 const BOT_AVATAR_LOADING = './dog-loading.png';
 const BOT_AVATAR_SUCCESS = './dog-success.png';
-
-const BOT_MESSAGES = [
-    '이런 상품들 찾아봤어!',
-    '마음에 드는 게 있으면 좋겠다',
-    '이 중에서 골라봐',
-    '비슷한 것들 모아봤어',
-    '어떤 게 제일 좋아 보여?'
-];
 
 // ===== 초기화 =====
 sendButton.addEventListener('click', handleSendMessage);
@@ -33,6 +28,7 @@ userInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') handleSendMessage();
 });
 
+// 🔥 카드 네비게이션 이벤트 연결 (누락되어 있었음)
 prevButton.addEventListener('click', showPreviousCard);
 nextButton.addEventListener('click', showNextCard);
 
@@ -54,49 +50,81 @@ async function fetchRecommendations(userInputText) {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userInput: userInputText })
+            body: JSON.stringify({
+                userInput: userInputText // 🔥 백엔드 계약 그대로
+            })
         });
 
         const data = await response.json();
 
-        const loadingMessage = document.getElementById('loading-message');
-        if (loadingMessage) loadingMessage.remove();
-
+        removeLoadingMessage();
         handleServerResponse(data);
 
     } catch (error) {
         console.error(error);
+        removeLoadingMessage();
         showErrorMessage();
     }
 }
 
 // ===== 서버 응답 처리 =====
-function handleServerResponse({ type, message, items }) {
+function handleServerResponse(data) {
+
+    // 🔥 첫 서버 응답 시 HTML 기본 메시지 제거
+    clearInitialBotMessageIfNeeded();
+
+    const type =
+        data.type ??
+        data.decisionType;
+
+    const message =
+        data.message ??
+        data.content ??
+        '';
+
+    const items =
+        data.items ??
+        data.products ??
+        [];
+
     if (type === 'REQUERY' || type === 'INVALID') {
-        addBotMessage(message, BOT_AVATAR_NORMAL);
+        addBotMessage(message || '조금만 더 알려줄래?', BOT_AVATAR_NORMAL);
         clearCards();
         return;
     }
 
     if (type === 'RECOMMEND') {
-        addBotMessage(
-            message || randomBotMessage(),
-            BOT_AVATAR_SUCCESS
-        );
+        addBotMessage(message || '이 상품들 어때?', BOT_AVATAR_SUCCESS);
 
-        // 🔥 백엔드 Item 구조에 맞게 매핑
-        const products = (items || []).map(item => ({
-    id: item.productId,
-    name: item.title,
-    price: item.price ? `${item.price.toLocaleString()}원` : '',
-    image: item.imageUrl,
-    mall: item.mallName,
-    link: item.link,
-    reason: item.explanation || '추천 이유를 생성 중이에요.'
-}));
-
+        // 🔥 필드명 수정: item.image → item.imageUrl, item.lprice → item.price
+        const products = items.map(item => ({
+            id: item.productId,
+            name: item.title,
+            price: item.price
+                ? `${Number(item.price).toLocaleString()}원`
+                : '',
+            image: item.imageUrl,
+            mall: item.mallName,
+            link: item.link,
+            reason: item.explanation || '추천 이유를 생성 중이에요.'
+        }));
 
         showRecommendations(products);
+    }
+}
+
+// ===== 🔥 HTML 초기 봇 메시지 제거 =====
+function clearInitialBotMessageIfNeeded() {
+    if (initialBotMessageCleared) return;
+
+    const botMessages = messagesContainer.querySelectorAll('.bot-message');
+
+    if (botMessages.length === 1) {
+        const bubble = botMessages[0].querySelector('.message-bubble');
+        if (bubble && bubble.textContent.trim() === '안녕! 뭘 찾아드릴까요?') {
+            botMessages[0].remove();
+            initialBotMessageCleared = true;
+        }
     }
 }
 
@@ -109,7 +137,7 @@ function addUserMessage(text) {
     scrollToBottom();
 }
 
-function addBotMessage(text, avatar = BOT_AVATAR_NORMAL) {
+function addBotMessage(text, avatar) {
     const div = document.createElement('div');
     div.className = 'message bot-message';
     div.innerHTML = `
@@ -122,8 +150,8 @@ function addBotMessage(text, avatar = BOT_AVATAR_NORMAL) {
 
 function showLoadingMessage() {
     const div = document.createElement('div');
-    div.className = 'message bot-message';
     div.id = 'loading-message';
+    div.className = 'message bot-message';
     div.innerHTML = `
         <img src="${BOT_AVATAR_LOADING}" class="bot-avatar">
         <div class="message-bubble loading-dots">
@@ -134,15 +162,12 @@ function showLoadingMessage() {
     scrollToBottom();
 }
 
-function showErrorMessage() {
-    addBotMessage(
-        '앗, 지금은 상품을 찾기 어려워... 다시 시도해줄래?',
-        BOT_AVATAR_NORMAL
-    );
+function removeLoadingMessage() {
+    document.getElementById('loading-message')?.remove();
 }
 
-function randomBotMessage() {
-    return BOT_MESSAGES[Math.floor(Math.random() * BOT_MESSAGES.length)];
+function showErrorMessage() {
+    addBotMessage('서버랑 연결이 끊겼어. 다시 시도해줄래?', BOT_AVATAR_NORMAL);
 }
 
 // ===== 카드 처리 =====
