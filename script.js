@@ -1,3 +1,14 @@
+window.addEventListener("load", () => {
+    fetch(BASE_URL + "/api/recommend/reset", {
+        method: "POST"
+    }).then(() => {
+        console.log("🔥 서버 초기화 완료");
+    }).catch(err => {
+        console.error("초기화 실패", err);
+    });
+});
+
+
 // ========== 뷰 전환 시스템 ==========
 const views = {
     landing: document.getElementById('landingView'),
