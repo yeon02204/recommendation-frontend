@@ -204,8 +204,28 @@ menuDropdown.addEventListener('click', (e) => {
 });
 
 // 메뉴 아이템들
-document.getElementById('menuRefresh').addEventListener('click', () => {
-    // 채팅 초기화
+document.getElementById('menuRefresh').addEventListener('click', async () => {
+    // 백엔드 서버 리셋 API 호출
+    try {
+        const response = await fetch(BASE_URL + '/api/recommend/reset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('✅ 서버 리셋 완료:', data.message);
+        } else {
+            console.warn('⚠️ 서버 리셋 실패:', data.message);
+        }
+    } catch (error) {
+        console.error('❌ 서버 리셋 오류:', error);
+    }
+    
+    // 프론트 채팅 초기화
     resetChat();
     menuDropdown.classList.remove('active');
 });
@@ -282,8 +302,9 @@ window.addEventListener('load', handleScrollAnimation);
 // ========================================================
 
 // ===== 전역 변수 =====
-const API_URL = 'https://recommendation-backend-production.up.railway.app/api/recommend/home';
-
+// Railway 배포 서버 URL
+const BASE_URL = 'https://recommendation-backend-production.up.railway.app';
+const API_URL = BASE_URL + '/api/recommend/home';
 
 const messagesContainer = document.getElementById('messagesContainer');
 const userInput = document.getElementById('userInput');
@@ -695,3 +716,19 @@ function removePartyParticles() {
 // if (localStorage.getItem('partyMode') === 'active') {
 //     setTimeout(createPartyParticles, 100);
 // }
+
+// ===== 페이지 로드 시 백엔드 리셋 (더 안정적) =====
+// beforeunload는 불안정하므로 페이지 로드 시 초기화
+window.addEventListener('load', async () => {
+    try {
+        await fetch(BASE_URL + '/api/recommend/reset', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        console.log('🔄 페이지 로드 - 서버 리셋 완료');
+    } catch (error) {
+        console.error('❌ 서버 리셋 오류:', error);
+    }
+});
