@@ -16,6 +16,16 @@
         <span class="moon-icon">👓</span>
     </button>
 
+    <!-- 파티 모드 토글 버튼 (이스터에그) -->
+    <button class="party-toggle" id="partyToggle" aria-label="파티 모드">
+        <span class="party-icon">🎧</span>
+    </button>
+
+    <!-- 파티 모드 활성화 플래시 -->
+    <div class="party-flash" id="partyFlash">
+        <div class="party-flash-text">PARTY MODE ACTIVATED</div>
+    </div>
+
     <!-- ========== 랜딩 페이지 ========== -->
     <div class="view" id="landingView">
         <!-- Hero 섹션 -->
@@ -399,8 +409,52 @@
                 <!-- 기술 스택 -->
                 <section class="info-section fade-in" style="animation-delay: 0.3s">
                     <h2 class="info-section-title">🛠️ 기술 스택</h2>
-                    <div class="info-box editable">
-                        <p class="placeholder-text">Html, CSS, JavaScript, Java 21, Spring Boot, Spring Web / RestTemplate, OpenAI API, 네이버 스토어 Open API (아이콘넣기)</p>
+                    <div class="tech-stack-grid">
+                        <!-- Frontend -->
+                        <div class="tech-card">
+                            <div class="tech-icon">🌐</div>
+                            <div class="tech-name">HTML5</div>
+                            <div class="tech-desc">구조</div>
+                        </div>
+                        <div class="tech-card">
+                            <div class="tech-icon">🎨</div>
+                            <div class="tech-name">CSS3</div>
+                            <div class="tech-desc">스타일링</div>
+                        </div>
+                        <div class="tech-card">
+                            <div class="tech-icon">⚡</div>
+                            <div class="tech-name">JavaScript</div>
+                            <div class="tech-desc">인터랙션</div>
+                        </div>
+                        
+                        <!-- Backend -->
+                        <div class="tech-card">
+                            <div class="tech-icon">☕</div>
+                            <div class="tech-name">Java 21</div>
+                            <div class="tech-desc">언어</div>
+                        </div>
+                        <div class="tech-card">
+                            <div class="tech-icon">🍃</div>
+                            <div class="tech-name">Spring Boot</div>
+                            <div class="tech-desc">프레임워크</div>
+                        </div>
+                        <div class="tech-card">
+                            <div class="tech-icon">🔌</div>
+                            <div class="tech-name">Spring Web</div>
+                            <div class="tech-desc">REST API</div>
+                        </div>
+                        
+                        <!-- APIs -->
+                        <div class="tech-card">
+                            <div class="tech-icon">🤖</div>
+                            <div class="tech-name">OpenAI API</div>
+                            <div class="tech-desc">AI 분석</div>
+                        </div>
+                        <div class="tech-card">
+                            <div class="tech-icon">🛍️</div>
+                            <div class="tech-name">Naver Shopping</div>
+                            <div class="tech-desc">상품 검색</div>
+                        </div>
                     </div>
                 </section>
 

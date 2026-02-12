@@ -58,6 +58,93 @@ themeToggle.addEventListener('click', () => {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
 });
 
+// ========== 파티 모드 시스템 ==========
+const partyToggle = document.getElementById('partyToggle');
+const partyFlash = document.getElementById('partyFlash');
+
+// localStorage에서 파티 모드 설정 불러오기 - 주석 처리 (자동 활성화 안 함)
+// const savedParty = localStorage.getItem('partyMode');
+// if (savedParty === 'active') {
+//     body.classList.add('party-mode');
+// }
+
+partyToggle.addEventListener('click', () => {
+    const isActivating = !body.classList.contains('party-mode');
+    
+    if (isActivating) {
+        // ===== 타임라인: 4초의 웅장하고 부드러운 도입 =====
+        
+        // 0s: 버튼 클릭 피드백
+        partyToggle.style.transition = 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        partyToggle.style.transform = 'scale(0.85)';
+        
+        // 0.15s: 버튼 복구
+        setTimeout(() => {
+            partyToggle.style.transform = 'scale(1)';
+        }, 150);
+        
+        // 0.3s: 화면 서서히 어두워지기 (부드럽게)
+        setTimeout(() => {
+            document.body.style.transition = 'filter 1s cubic-bezier(0.4, 0, 0.2, 1)';
+            document.body.style.filter = 'brightness(0.2) blur(8px)';
+        }, 300);
+        
+        // 1.3s: 플래시 등장
+        setTimeout(() => {
+            partyFlash.classList.add('active');
+        }, 1300);
+        
+        // 1.8s: 파티 모드 활성화
+        setTimeout(() => {
+            body.classList.add('party-mode');
+            localStorage.setItem('partyMode', 'active');
+            createPartyParticles();
+        }, 1800);
+        
+        // 2.5s: 밝기 복구 시작 (부드럽게)
+        setTimeout(() => {
+            document.body.style.transition = 'filter 1s cubic-bezier(0.4, 0, 0.2, 1)';
+            document.body.style.filter = 'brightness(1.05) blur(0px)';
+        }, 2500);
+        
+        // 3.3s: 밝기 정상화 (자연스럽게)
+        setTimeout(() => {
+            document.body.style.transition = 'filter 0.5s ease-out';
+            document.body.style.filter = 'brightness(1)';
+        }, 3300);
+        
+        // 3.5s: 플래시 제거
+        setTimeout(() => {
+            partyFlash.classList.remove('active');
+        }, 3500);
+        
+        // 4.2s: 모든 transition 정리
+        setTimeout(() => {
+            document.body.style.transition = '';
+            document.body.style.filter = '';
+            partyToggle.style.transition = '';
+        }, 4200);
+        
+    } else {
+        // 파티 모드 비활성화 (빠르고 부드럽게)
+        document.body.style.transition = 'filter 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+        document.body.style.filter = 'brightness(0.3)';
+        
+        setTimeout(() => {
+            body.classList.remove('party-mode');
+            localStorage.setItem('partyMode', 'inactive');
+            removePartyParticles();
+            document.body.style.transition = 'filter 0.4s ease-out';
+            document.body.style.filter = 'brightness(1)';
+        }, 500);
+        
+        setTimeout(() => {
+            document.body.style.transition = '';
+            document.body.style.filter = '';
+        }, 900);
+    }
+});
+
 // ========== 랜딩 페이지 이벤트 ==========
 
 // 시작하기 버튼
@@ -529,3 +616,81 @@ function resetChat() {
     
     console.log('채팅이 초기화되었습니다.');
 }
+
+// ===== 파티 모드 파티클 시스템 =====
+function createPartyParticles() {
+    // 미러볼 파티클 컨테이너 생성
+    const container = document.createElement('div');
+    container.id = 'party-particles';
+    container.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 2;
+    `;
+    
+    // 150개 파티클 생성 (더 많이!)
+    for (let i = 0; i < 150; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'party-particle';
+        
+        // 랜덤 위치
+        const x = Math.random() * 100;
+        const y = Math.random() * 100;
+        
+        // 랜덤 크기 (더 크게)
+        const size = 3 + Math.random() * 8;
+        
+        // 랜덤 색상 (더 많은 색)
+        const colors = [
+            '#ff006e', '#bf00ff', '#00f5ff', '#ccff00', 
+            '#ff1493', '#00ff00', '#ff00ff', '#00ffff',
+            '#ff0080', '#8b00ff', '#00ff88', '#ffff00'
+        ];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        
+        // 랜덤 애니메이션 딜레이
+        const delay = Math.random() * 1.5;
+        
+        // 랜덤 애니메이션 속도 (더 빠르게)
+        const twinkleSpeed = 0.3 + Math.random() * 0.4;
+        const floatSpeed = 2 + Math.random() * 2;
+        
+        particle.style.cssText = `
+            position: absolute;
+            left: ${x}%;
+            top: ${y}%;
+            width: ${size}px;
+            height: ${size}px;
+            border-radius: 50%;
+            background: ${color};
+            box-shadow: 
+                0 0 ${size * 4}px ${color},
+                0 0 ${size * 8}px ${color};
+            animation: 
+                particleTwinkle ${twinkleSpeed}s ease-in-out ${delay}s infinite,
+                particleFloat ${floatSpeed}s ease-in-out ${delay}s infinite,
+                particleSpin ${floatSpeed * 1.5}s linear ${delay}s infinite;
+            filter: brightness(1.5);
+        `;
+        
+        container.appendChild(particle);
+    }
+    
+    document.body.appendChild(container);
+}
+
+function removePartyParticles() {
+    const container = document.getElementById('party-particles');
+    if (container) {
+        container.remove();
+    }
+}
+
+// 페이지 로드 시 파티 모드 자동 활성화 안 함
+// if (localStorage.getItem('partyMode') === 'active') {
+//     setTimeout(createPartyParticles, 100);
+// }
