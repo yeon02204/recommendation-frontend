@@ -1,3 +1,199 @@
+// ========== 뷰 전환 시스템 ==========
+const views = {
+    landing: document.getElementById('landingView'),
+    app: document.getElementById('appView'),
+    info: document.getElementById('infoView'),
+    guide: document.getElementById('guideView')
+};
+
+let currentView = 'landing';
+let previousView = 'landing'; // 이전 뷰 기억
+
+function switchView(viewName, autoQuery = null) {
+    // 이전 뷰 저장 (guide로 가는 경우만)
+    if (viewName === 'guide') {
+        previousView = currentView;
+    }
+    
+    // 현재 뷰 페이드 아웃
+    views[currentView].classList.add('fade-out');
+    
+    setTimeout(() => {
+        // 모든 뷰 숨기기
+        Object.keys(views).forEach(key => {
+            views[key].style.display = 'none';
+            views[key].classList.remove('fade-out');
+        });
+        
+        // 새 뷰 보이기
+        views[viewName].style.display = 'block';
+        currentView = viewName;
+        
+        // 스크롤 최상단으로
+        window.scrollTo(0, 0);
+        
+        // 챗봇 뷰로 전환 시 자동 쿼리 실행
+        if (viewName === 'app' && autoQuery) {
+            setTimeout(() => {
+                userInput.value = autoQuery;
+                handleSendMessage();
+            }, 300);
+        }
+    }, 300);
+}
+
+// ========== 다크모드 시스템 ==========
+const themeToggle = document.getElementById('themeToggle');
+const body = document.body;
+
+// localStorage에서 다크모드 설정 불러오기
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'dark') {
+    body.classList.add('dark-mode');
+}
+
+themeToggle.addEventListener('click', () => {
+    body.classList.toggle('dark-mode');
+    const isDark = body.classList.contains('dark-mode');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+});
+
+// ========== 랜딩 페이지 이벤트 ==========
+
+// 시작하기 버튼
+document.getElementById('startButton').addEventListener('click', () => {
+    switchView('app');
+});
+
+// 예시 버튼들
+document.querySelectorAll('.example-button').forEach(button => {
+    button.addEventListener('click', () => {
+        const query = button.getAttribute('data-query');
+        switchView('app', query);
+    });
+});
+
+// Footer 링크들
+document.getElementById('openInfoPage').addEventListener('click', () => {
+    switchView('info');
+});
+
+document.getElementById('openGuidePage').addEventListener('click', () => {
+    switchView('guide');
+});
+
+// ========== 챗봇 페이지 이벤트 ==========
+
+// 뒤로가기 버튼
+document.getElementById('backToLanding').addEventListener('click', () => {
+    switchView('landing');
+});
+
+// ? 가이드 버튼 (헤더)
+document.getElementById('guideButtonHeader').addEventListener('click', () => {
+    switchView('guide');
+});
+
+// 메뉴 버튼 & 드롭다운
+const menuButton = document.getElementById('menuButton');
+const menuDropdown = document.getElementById('menuDropdown');
+
+menuButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    menuDropdown.classList.toggle('active');
+    console.log('메뉴 버튼 클릭, active 상태:', menuDropdown.classList.contains('active'));
+});
+
+// 메뉴 외부 클릭 시 닫기
+document.addEventListener('click', () => {
+    if (menuDropdown.classList.contains('active')) {
+        menuDropdown.classList.remove('active');
+        console.log('메뉴 외부 클릭, 메뉴 닫힘');
+    }
+});
+
+menuDropdown.addEventListener('click', (e) => {
+    e.stopPropagation();
+});
+
+// 메뉴 아이템들
+document.getElementById('menuRefresh').addEventListener('click', () => {
+    // 채팅 초기화
+    resetChat();
+    menuDropdown.classList.remove('active');
+});
+
+document.getElementById('menuInfo').addEventListener('click', () => {
+    switchView('info');
+});
+
+document.getElementById('menuGuide').addEventListener('click', () => {
+    switchView('guide');
+});
+
+document.getElementById('menuHome').addEventListener('click', () => {
+    switchView('landing');
+});
+
+// ========== 개발자 정보 페이지 이벤트 ==========
+
+// 뒤로가기
+document.getElementById('backFromInfo').addEventListener('click', () => {
+    switchView('landing');
+});
+
+// GitHub 링크 저장
+const githubInput = document.getElementById('githubInput');
+const githubButton = document.getElementById('githubButton');
+const githubLink = document.getElementById('githubLink');
+
+// localStorage에서 GitHub 링크 불러오기
+const savedGithubUrl = localStorage.getItem('githubUrl');
+if (savedGithubUrl) {
+    githubInput.value = savedGithubUrl;
+    githubLink.href = savedGithubUrl;
+    githubLink.style.display = 'inline-flex';
+}
+
+githubButton.addEventListener('click', () => {
+    const url = githubInput.value.trim();
+    if (url) {
+        localStorage.setItem('githubUrl', url);
+        githubLink.href = url;
+        githubLink.style.display = 'inline-flex';
+        alert('GitHub 링크가 저장되었습니다!');
+    }
+});
+
+// ========== 사용 가이드 페이지 이벤트 ==========
+
+// 뒤로가기 (이전 페이지로)
+document.getElementById('backFromGuide').addEventListener('click', () => {
+    switchView(previousView);
+});
+
+// ========== 스크롤 애니메이션 ==========
+function handleScrollAnimation() {
+    const elements = document.querySelectorAll('.fade-in');
+    const windowHeight = window.innerHeight;
+    
+    elements.forEach(element => {
+        const elementTop = element.getBoundingClientRect().top;
+        
+        if (elementTop < windowHeight - 100) {
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+        }
+    });
+}
+
+window.addEventListener('scroll', handleScrollAnimation);
+window.addEventListener('load', handleScrollAnimation);
+
+// ========================================================
+// ========== 여기서부터 기존 챗봇 로직 (절대 건드리지 않음) ==========
+// ========================================================
+
 // ===== 전역 변수 =====
 const API_URL = 'http://localhost:8080/api/recommend/home';
 
@@ -304,4 +500,32 @@ function scrollToBottom() {
     setTimeout(() => {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }, 50);
+}
+
+// ===== 채팅 초기화 =====
+function resetChat() {
+    // 메시지 전부 삭제
+    messagesContainer.innerHTML = '';
+    
+    // 초기 봇 메시지 다시 추가
+    const initialMessage = document.createElement('div');
+    initialMessage.className = 'message bot-message';
+    initialMessage.innerHTML = `
+        <img src="${BOT_AVATAR_NORMAL}" alt="봇" class="bot-avatar">
+        <div class="message-bubble">
+            안녕! 뭘 찾아드릴까요?
+        </div>
+    `;
+    messagesContainer.appendChild(initialMessage);
+    
+    // 카드 덱 초기화
+    clearCards();
+    
+    // 플래그 리셋
+    initialBotMessageCleared = false;
+    
+    // 입력창 비우기
+    userInput.value = '';
+    
+    console.log('채팅이 초기화되었습니다.');
 }
