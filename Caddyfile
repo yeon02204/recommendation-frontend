@@ -1,3 +1,5 @@
 :8080
-root * /app
+
+root * .
+try_files {path} /index.html
 file_server
