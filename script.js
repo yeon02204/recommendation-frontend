@@ -282,7 +282,8 @@ window.addEventListener('load', handleScrollAnimation);
 // ========================================================
 
 // ===== 전역 변수 =====
-const API_URL = 'http://localhost:8080/api/recommend/home';
+const API_URL = 'https://recommendation-backend-production.up.railway.app/api/recommend/home';
+
 
 const messagesContainer = document.getElementById('messagesContainer');
 const userInput = document.getElementById('userInput');
