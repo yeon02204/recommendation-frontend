@@ -1,11 +1,20 @@
-window.addEventListener("load", () => {
-    fetch(BASE_URL + "/api/recommend/reset", {
-        method: "POST"
-    }).then(() => {
-        console.log("🔥 서버 초기화 완료");
-    }).catch(err => {
-        console.error("초기화 실패", err);
-    });
+// ===== 🔥 전역 변수 (먼저 선언) =====
+const BASE_URL = 'https://recommendation-backend-production.up.railway.app';
+const API_URL = BASE_URL + '/api/recommend/home';
+
+// ========== 페이지 로드 시 백엔드 리셋 (중복 제거 - 딱 한 번만) ==========
+window.addEventListener("load", async () => {
+    try {
+        await fetch(BASE_URL + "/api/recommend/reset", {
+            method: "POST",
+            credentials: "include"  // 🔥 쿠키 포함
+        });
+        console.log("🔄 페이지 로드 - 서버 리셋 완료");
+    } catch (err) {
+        console.error("❌ 서버 리셋 오류", err);
+    }
+
+    handleScrollAnimation();
 });
 
 
@@ -73,63 +82,48 @@ themeToggle.addEventListener('click', () => {
 const partyToggle = document.getElementById('partyToggle');
 const partyFlash = document.getElementById('partyFlash');
 
-// localStorage에서 파티 모드 설정 불러오기 - 주석 처리 (자동 활성화 안 함)
-// const savedParty = localStorage.getItem('partyMode');
-// if (savedParty === 'active') {
-//     body.classList.add('party-mode');
-// }
-
 partyToggle.addEventListener('click', () => {
     const isActivating = !body.classList.contains('party-mode');
     
     if (isActivating) {
         // ===== 타임라인: 4초의 웅장하고 부드러운 도입 =====
         
-        // 0s: 버튼 클릭 피드백
         partyToggle.style.transition = 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1)';
         partyToggle.style.transform = 'scale(0.85)';
         
-        // 0.15s: 버튼 복구
         setTimeout(() => {
             partyToggle.style.transform = 'scale(1)';
         }, 150);
         
-        // 0.3s: 화면 서서히 어두워지기 (부드럽게)
         setTimeout(() => {
             document.body.style.transition = 'filter 1s cubic-bezier(0.4, 0, 0.2, 1)';
             document.body.style.filter = 'brightness(0.2) blur(8px)';
         }, 300);
         
-        // 1.3s: 플래시 등장
         setTimeout(() => {
             partyFlash.classList.add('active');
         }, 1300);
         
-        // 1.8s: 파티 모드 활성화
         setTimeout(() => {
             body.classList.add('party-mode');
             localStorage.setItem('partyMode', 'active');
             createPartyParticles();
         }, 1800);
         
-        // 2.5s: 밝기 복구 시작 (부드럽게)
         setTimeout(() => {
             document.body.style.transition = 'filter 1s cubic-bezier(0.4, 0, 0.2, 1)';
             document.body.style.filter = 'brightness(1.05) blur(0px)';
         }, 2500);
         
-        // 3.3s: 밝기 정상화 (자연스럽게)
         setTimeout(() => {
             document.body.style.transition = 'filter 0.5s ease-out';
             document.body.style.filter = 'brightness(1)';
         }, 3300);
         
-        // 3.5s: 플래시 제거
         setTimeout(() => {
             partyFlash.classList.remove('active');
         }, 3500);
         
-        // 4.2s: 모든 transition 정리
         setTimeout(() => {
             document.body.style.transition = '';
             document.body.style.filter = '';
@@ -137,7 +131,7 @@ partyToggle.addEventListener('click', () => {
         }, 4200);
         
     } else {
-        // 파티 모드 비활성화 (빠르고 부드럽게)
+        // 파티 모드 비활성화
         document.body.style.transition = 'filter 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
         document.body.style.filter = 'brightness(0.3)';
         
@@ -158,12 +152,10 @@ partyToggle.addEventListener('click', () => {
 
 // ========== 랜딩 페이지 이벤트 ==========
 
-// 시작하기 버튼
 document.getElementById('startButton').addEventListener('click', () => {
     switchView('app');
 });
 
-// 예시 버튼들
 document.querySelectorAll('.example-button').forEach(button => {
     button.addEventListener('click', () => {
         const query = button.getAttribute('data-query');
@@ -171,7 +163,6 @@ document.querySelectorAll('.example-button').forEach(button => {
     });
 });
 
-// Footer 링크들
 document.getElementById('openInfoPage').addEventListener('click', () => {
     switchView('info');
 });
@@ -182,17 +173,14 @@ document.getElementById('openGuidePage').addEventListener('click', () => {
 
 // ========== 챗봇 페이지 이벤트 ==========
 
-// 뒤로가기 버튼
 document.getElementById('backToLanding').addEventListener('click', () => {
     switchView('landing');
 });
 
-// ? 가이드 버튼 (헤더)
 document.getElementById('guideButtonHeader').addEventListener('click', () => {
     switchView('guide');
 });
 
-// 메뉴 버튼 & 드롭다운
 const menuButton = document.getElementById('menuButton');
 const menuDropdown = document.getElementById('menuDropdown');
 
@@ -202,7 +190,6 @@ menuButton.addEventListener('click', (e) => {
     console.log('메뉴 버튼 클릭, active 상태:', menuDropdown.classList.contains('active'));
 });
 
-// 메뉴 외부 클릭 시 닫기
 document.addEventListener('click', () => {
     if (menuDropdown.classList.contains('active')) {
         menuDropdown.classList.remove('active');
@@ -214,12 +201,11 @@ menuDropdown.addEventListener('click', (e) => {
     e.stopPropagation();
 });
 
-// 메뉴 아이템들
 document.getElementById('menuRefresh').addEventListener('click', async () => {
-    // 백엔드 서버 리셋 API 호출
     try {
         const response = await fetch(BASE_URL + '/api/recommend/reset', {
             method: 'POST',
+            credentials: 'include',  // 🔥 쿠키 포함
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -236,7 +222,6 @@ document.getElementById('menuRefresh').addEventListener('click', async () => {
         console.error('❌ 서버 리셋 오류:', error);
     }
     
-    // 프론트 채팅 초기화
     resetChat();
     menuDropdown.classList.remove('active');
 });
@@ -255,17 +240,14 @@ document.getElementById('menuHome').addEventListener('click', () => {
 
 // ========== 개발자 정보 페이지 이벤트 ==========
 
-// 뒤로가기
 document.getElementById('backFromInfo').addEventListener('click', () => {
     switchView('landing');
 });
 
-// GitHub 링크 저장
 const githubInput = document.getElementById('githubInput');
 const githubButton = document.getElementById('githubButton');
 const githubLink = document.getElementById('githubLink');
 
-// localStorage에서 GitHub 링크 불러오기
 const savedGithubUrl = localStorage.getItem('githubUrl');
 if (savedGithubUrl) {
     githubInput.value = savedGithubUrl;
@@ -285,7 +267,6 @@ githubButton.addEventListener('click', () => {
 
 // ========== 사용 가이드 페이지 이벤트 ==========
 
-// 뒤로가기 (이전 페이지로)
 document.getElementById('backFromGuide').addEventListener('click', () => {
     switchView(previousView);
 });
@@ -306,16 +287,10 @@ function handleScrollAnimation() {
 }
 
 window.addEventListener('scroll', handleScrollAnimation);
-window.addEventListener('load', handleScrollAnimation);
 
 // ========================================================
-// ========== 여기서부터 기존 챗봇 로직 (절대 건드리지 않음) ==========
+// ========== 챗봇 로직 ==========
 // ========================================================
-
-// ===== 전역 변수 =====
-// Railway 배포 서버 URL
-const BASE_URL = 'https://recommendation-backend-production.up.railway.app';
-const API_URL = BASE_URL + '/api/recommend/home';
 
 const messagesContainer = document.getElementById('messagesContainer');
 const userInput = document.getElementById('userInput');
@@ -329,22 +304,17 @@ const cardCount = document.getElementById('cardCount');
 
 let currentProducts = [];
 let currentCardIndex = 0;
-
-// 🔥 HTML 초기 봇 메시지 제거 여부
 let initialBotMessageCleared = false;
 
-// ===== 봇 아바타 =====
 const BOT_AVATAR_NORMAL = './dog-normal.png';
 const BOT_AVATAR_LOADING = './dog-loading.png';
 const BOT_AVATAR_SUCCESS = './dog-success.png';
 
-// ===== 초기화 =====
 sendButton.addEventListener('click', handleSendMessage);
 userInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') handleSendMessage();
 });
 
-// 🔥 카드 네비게이션 이벤트 연결 (누락되어 있었음)
 prevButton.addEventListener('click', showPreviousCard);
 nextButton.addEventListener('click', showNextCard);
 
@@ -365,9 +335,10 @@ async function fetchRecommendations(userInputText) {
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
+            credentials: 'include',  // 🔥 쿠키 포함 - 세션 유지 핵심
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                userInput: userInputText // 🔥 백엔드 계약 그대로
+                userInput: userInputText
             })
         });
 
@@ -386,7 +357,6 @@ async function fetchRecommendations(userInputText) {
 // ===== 서버 응답 처리 =====
 function handleServerResponse(data) {
 
-    // 🔥 첫 서버 응답 시 HTML 기본 메시지 제거
     clearInitialBotMessageIfNeeded();
 
     const type =
@@ -412,7 +382,6 @@ function handleServerResponse(data) {
     if (type === 'RECOMMEND') {
         addBotMessage(message || '이 상품들 어때?', BOT_AVATAR_SUCCESS);
 
-        // 🔥 필드명 수정: item.image → item.imageUrl, item.lprice → item.price
         const products = items.map(item => ({
             id: item.productId,
             name: item.title,
@@ -429,7 +398,7 @@ function handleServerResponse(data) {
     }
 }
 
-// ===== 🔥 HTML 초기 봇 메시지 제거 =====
+// ===== HTML 초기 봇 메시지 제거 =====
 function clearInitialBotMessageIfNeeded() {
     if (initialBotMessageCleared) return;
 
@@ -624,10 +593,8 @@ function scrollToBottom() {
 
 // ===== 채팅 초기화 =====
 function resetChat() {
-    // 메시지 전부 삭제
     messagesContainer.innerHTML = '';
     
-    // 초기 봇 메시지 다시 추가
     const initialMessage = document.createElement('div');
     initialMessage.className = 'message bot-message';
     initialMessage.innerHTML = `
@@ -638,13 +605,8 @@ function resetChat() {
     `;
     messagesContainer.appendChild(initialMessage);
     
-    // 카드 덱 초기화
     clearCards();
-    
-    // 플래그 리셋
     initialBotMessageCleared = false;
-    
-    // 입력창 비우기
     userInput.value = '';
     
     console.log('채팅이 초기화되었습니다.');
@@ -652,7 +614,6 @@ function resetChat() {
 
 // ===== 파티 모드 파티클 시스템 =====
 function createPartyParticles() {
-    // 미러볼 파티클 컨테이너 생성
     const container = document.createElement('div');
     container.id = 'party-particles';
     container.style.cssText = `
@@ -665,19 +626,14 @@ function createPartyParticles() {
         z-index: 2;
     `;
     
-    // 150개 파티클 생성 (더 많이!)
     for (let i = 0; i < 150; i++) {
         const particle = document.createElement('div');
         particle.className = 'party-particle';
         
-        // 랜덤 위치
         const x = Math.random() * 100;
         const y = Math.random() * 100;
-        
-        // 랜덤 크기 (더 크게)
         const size = 3 + Math.random() * 8;
         
-        // 랜덤 색상 (더 많은 색)
         const colors = [
             '#ff006e', '#bf00ff', '#00f5ff', '#ccff00', 
             '#ff1493', '#00ff00', '#ff00ff', '#00ffff',
@@ -685,10 +641,7 @@ function createPartyParticles() {
         ];
         const color = colors[Math.floor(Math.random() * colors.length)];
         
-        // 랜덤 애니메이션 딜레이
         const delay = Math.random() * 1.5;
-        
-        // 랜덤 애니메이션 속도 (더 빠르게)
         const twinkleSpeed = 0.3 + Math.random() * 0.4;
         const floatSpeed = 2 + Math.random() * 2;
         
@@ -722,24 +675,3 @@ function removePartyParticles() {
         container.remove();
     }
 }
-
-// 페이지 로드 시 파티 모드 자동 활성화 안 함
-// if (localStorage.getItem('partyMode') === 'active') {
-//     setTimeout(createPartyParticles, 100);
-// }
-
-// ===== 페이지 로드 시 백엔드 리셋 (더 안정적) =====
-// beforeunload는 불안정하므로 페이지 로드 시 초기화
-window.addEventListener('load', async () => {
-    try {
-        await fetch(BASE_URL + '/api/recommend/reset', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        console.log('🔄 페이지 로드 - 서버 리셋 완료');
-    } catch (error) {
-        console.error('❌ 서버 리셋 오류:', error);
-    }
-});
